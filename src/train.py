@@ -1,5 +1,7 @@
 import argparse
+
 import pytorch_lightning as pl
+from pytorch_lightning.loggers import MLFlowLogger
 
 from rapp.data import MNISTDataModule
 from rapp.models import AutoEncoder, RaPP
@@ -13,6 +15,8 @@ def main(
     hidden_size: int,
     n_layers: int,
     max_epochs: int,
+    experiment_name: str,
+    tracking_uri: str,
 ):
     if dataset == "mnist":
         data_module = MNISTDataModule(
@@ -29,13 +33,24 @@ def main(
         )
     else:
         raise ValueError(f"Not valid model name {model}")
+    logger = MLFlowLogger(experiment_name=experiment_name, tracking_uri=tracking_uri)
+    logger.log_hyperparams(
+        {
+            "model": model,
+            "dataset": dataset,
+            "target_label": target_label,
+            "hidden_size": hidden_size,
+            "n_layers": n_layers,
+            "max_epochs": max_epochs,
+        }
+    )
 
-    trainer = pl.Trainer(max_epochs=max_epochs)
+    trainer = pl.Trainer(logger=logger, max_epochs=max_epochs)
     trainer.fit(auto_encoder, data_module)
     rapp = RaPP(auto_encoder)
     rapp.fit(data_module.train_dataloader())
     result = rapp.test(data_module.test_dataloader())
-    auto_encoder.log_dict(result)
+    logger.log_metrics(result)
 
 
 if __name__ == "__main__":
@@ -47,6 +62,8 @@ if __name__ == "__main__":
     parser.add_argument("--hidden_size", type=int, default=20)
     parser.add_argument("--n_layers", type=int, default=3)
     parser.add_argument("--max_epochs", type=int, default=200)
+    parser.add_argument("--experiment_name", type=str, default="RaPP")
+    parser.add_argument("--tracking_uri", type=str, default="file:./mlruns")
     args = parser.parse_args()
 
     main(
@@ -57,4 +74,6 @@ if __name__ == "__main__":
         hidden_size=args.hidden_size,
         n_layers=args.n_layers,
         max_epochs=args.max_epochs,
+        experiment_name=args.experiment_name,
+        tracking_uri=args.tracking_uri,
     )
