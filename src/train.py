@@ -17,6 +17,7 @@ def main(
     max_epochs: int,
     experiment_name: str,
     tracking_uri: str,
+    n_trials: int,
 ):
     if dataset == "mnist":
         data_module = MNISTDataModule(
@@ -42,6 +43,7 @@ def main(
             "hidden_size": hidden_size,
             "n_layers": n_layers,
             "max_epochs": max_epochs,
+            "n_trials": n_trials,
         }
     )
 
@@ -64,6 +66,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_epochs", type=int, default=200)
     parser.add_argument("--experiment_name", type=str, default="RaPP")
     parser.add_argument("--tracking_uri", type=str, default="file:./mlruns")
+    parser.add_argument("--n_trials", type=int, default=0)
     args = parser.parse_args()
 
     main(
@@ -76,4 +79,5 @@ if __name__ == "__main__":
         max_epochs=args.max_epochs,
         experiment_name=args.experiment_name,
         tracking_uri=args.tracking_uri,
+        n_trials=args.n_trials,
     )
