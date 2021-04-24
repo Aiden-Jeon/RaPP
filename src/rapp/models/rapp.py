@@ -41,9 +41,7 @@ class RaPP:
             outputs += [self.training_step(batch)]
         self.training_epoch_end(outputs)
 
-    def training_step(
-        self, batch: Tuple[torch.Tensor, torch.Tensor]
-    ) -> torch.Tensor:
+    def training_step(self, batch: Tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
         self.model.eval()
         with torch.no_grad():
             x, y = batch
@@ -79,9 +77,7 @@ class RaPP:
         label = torch.cat(label).numpy()
         score = torch.cat(score, dim=0)
         sap_score = (score ** 2).mean(dim=1).numpy()
-        nap_score = (
-            ((torch.mm(score - self.mu, self.v) / self.s) ** 2).mean(1).numpy()
-        )
+        nap_score = ((torch.mm(score - self.mu, self.v) / self.s) ** 2).mean(1).numpy()
 
         sap_auroc = get_auroc(label, sap_score)
         sap_aupr = get_aupr(label, sap_score)
@@ -94,6 +90,3 @@ class RaPP:
             "nap_aupr": nap_aupr,
         }
         return result
-
-    def configure_optimizers(self):
-        return super().configure_optimizers()
