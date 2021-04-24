@@ -1,0 +1,6 @@
+torch
+torchvision
+torchaudio
+pytorch-lightning
+mlflow  
+scikit-learn
