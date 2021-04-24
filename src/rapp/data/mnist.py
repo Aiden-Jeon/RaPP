@@ -15,7 +15,7 @@ class MNISTDataModule(pl.LightningDataModule):
     def __init__(
         self,
         data_dir: str = "",
-        num_workers: int = 16,
+        num_workers: int = 8,
         normalize: bool = False,
         seed: int = 42,
         batch_size: int = 256,
