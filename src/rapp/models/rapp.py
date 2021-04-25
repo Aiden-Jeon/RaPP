@@ -53,14 +53,14 @@ class RaPP:
         self.mu = outputs.mean(dim=0, keepdim=True)
         _, self.s, self.v = (outputs - self.mu).svd()
 
-    def test(self, test_loader: DataLoader) -> None:
+    def test(self, test_loader: DataLoader) -> Dict[str, float]:
         outputs = []
         for batch in test_loader:
             outputs += [self.test_step(batch)]
         result = self.test_epoch_end(outputs)
         return result
 
-    def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor]) -> List[torch.Tensor]:
+    def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor]) -> Dict[str, float]:
         self.model.eval()
         with torch.no_grad():
             x, y = batch
