@@ -6,6 +6,8 @@ from pytorch_lightning.loggers import MLFlowLogger
 
 from rapp.data import MNISTDataModule
 from rapp.models import AutoEncoder, RaPP
+from rapp.models.adversarial_autoencoder import AdversarialAutoEncoder
+from rapp.models.variational_autoencoder import VariationalAutoEncoder
 
 
 def main(
@@ -32,6 +34,17 @@ def main(
     if model == "ae":
         auto_encoder = AutoEncoder(
             input_size=input_size, hidden_size=hidden_size, n_layers=n_layers
+        )
+    elif model == "vae":
+        auto_encoder = VariationalAutoEncoder(
+            input_size=input_size, hidden_size=hidden_size, n_layers=n_layers
+        )
+    elif model == "aae":
+        auto_encoder = AdversarialAutoEncoder(
+            input_size=input_size,
+            hidden_size=hidden_size,
+            n_layers=n_layers,
+            d_layers=n_layers,
         )
     else:
         raise ValueError(f"Not valid model name {model}")
