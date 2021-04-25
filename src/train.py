@@ -1,5 +1,6 @@
 import argparse
 
+import torch
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import MLFlowLogger
 
@@ -17,7 +18,7 @@ def main(
     max_epochs: int,
     experiment_name: str,
     tracking_uri: str,
-    n_trials: int,
+    n_trial: int,
 ):
     if dataset == "mnist":
         data_module = MNISTDataModule(
@@ -43,11 +44,11 @@ def main(
             "hidden_size": hidden_size,
             "n_layers": n_layers,
             "max_epochs": max_epochs,
-            "n_trials": n_trials,
+            "n_trial": n_trial,
         }
     )
-
-    trainer = pl.Trainer(logger=logger, max_epochs=max_epochs)
+    gpus = -1 if torch.cuda.is_available() else 0
+    trainer = pl.Trainer(logger=logger, max_epochs=max_epochs, gpus=gpus)
     trainer.fit(auto_encoder, data_module)
     rapp = RaPP(auto_encoder)
     rapp.fit(data_module.train_dataloader())
@@ -66,7 +67,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_epochs", type=int, default=200)
     parser.add_argument("--experiment_name", type=str, default="RaPP")
     parser.add_argument("--tracking_uri", type=str, default="file:./mlruns")
-    parser.add_argument("--n_trials", type=int, default=0)
+    parser.add_argument("--n_trial", type=int, default=0)
     args = parser.parse_args()
 
     main(
@@ -79,5 +80,5 @@ if __name__ == "__main__":
         max_epochs=args.max_epochs,
         experiment_name=args.experiment_name,
         tracking_uri=args.tracking_uri,
-        n_trials=args.n_trials,
+        n_trial=args.n_trial,
     )
