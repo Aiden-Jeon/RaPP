@@ -5,9 +5,12 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import MLFlowLogger
 
 from rapp.data import MNISTDataModule
-from rapp.models import AutoEncoder, RaPP
-from rapp.models.adversarial_autoencoder import AdversarialAutoEncoder
-from rapp.models.variational_autoencoder import VariationalAutoEncoder
+from rapp.models import (
+    AutoEncoder,
+    AdversarialAutoEncoder,
+    VariationalAutoEncoder,
+    RaPP,
+)
 
 
 def main(
