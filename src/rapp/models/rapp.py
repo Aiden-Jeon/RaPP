@@ -67,7 +67,7 @@ class RaPP:
         with torch.no_grad():
             x, y = batch
             recon_x = self.model(x)
-            score = ((recon_x - x) ** 2).mean(dim=1).numpy()
+            score = ((recon_x - x) ** 2).mean(dim=1)
             diffs = self.get_pathaway_recon_diff(x, recon_x)
         return {"score": score, "diffs": diffs, "label": y}
 
@@ -85,7 +85,7 @@ class RaPP:
 
         rapp_score = torch.cat(rapp_score, dim=0)
         sap_score = (rapp_score ** 2).mean(dim=1).numpy()
-        nap_score = ((torch.mm(score - self.mu, self.v) / self.s) ** 2).mean(1).numpy()
+        nap_score = ((torch.mm(rapp_score - self.mu, self.v) / self.s) ** 2).mean(1).numpy()
 
         auroc = get_auroc(label, score)
         aupr = get_aupr(label, score)
