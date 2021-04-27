@@ -23,8 +23,9 @@ class RaPP:
         self.s = None
         self.v = None
 
-    def get_pathaway_recon_diff(self, x: torch.Tensor) -> torch.Tensor:
-        recon_x = self.model(x)
+    def get_pathaway_recon_diff(
+        self, x: torch.Tensor, recon_x: torch.Tensor
+    ) -> torch.Tensor:
         diffs = [recon_x - x]
         for layer_index, layer in enumerate(self.model.encoder[: self.rapp_end_index]):
             x = layer(x)
@@ -64,26 +65,36 @@ class RaPP:
         self.model.eval()
         with torch.no_grad():
             x, y = batch
-            diffs = self.get_pathaway_recon_diff(x)
-        return {"diffs": diffs, "label": y}
+            recon_x = self.model(x)
+            score = ((recon_x - x) ** 2).mean(dim=1).numpy()
+            diffs = self.get_pathaway_recon_diff(x, recon_x)
+        return {"score": score, "diffs": diffs, "label": y}
 
     def test_epoch_end(self, outputs: List[Any]) -> Dict[str, float]:
+        rapp_score = []
         score = []
         label = []
         for output in outputs:
-            score += [output["diffs"]]
+            rapp_score += [output["diffs"]]
+            score += [output["score"]]
             label += [output["label"]]
 
         label = torch.cat(label).numpy()
-        score = torch.cat(score, dim=0)
-        sap_score = (score ** 2).mean(dim=1).numpy()
+        score = torch.cat(score).numpy()
+
+        rapp_score = torch.cat(rapp_score, dim=0)
+        sap_score = (rapp_score ** 2).mean(dim=1).numpy()
         nap_score = ((torch.mm(score - self.mu, self.v) / self.s) ** 2).mean(1).numpy()
 
+        auroc = get_auroc(label, score)
+        aupr = get_aupr(label, score)
         sap_auroc = get_auroc(label, sap_score)
         sap_aupr = get_aupr(label, sap_score)
         nap_auroc = get_auroc(label, nap_score)
         nap_aupr = get_aupr(label, nap_score)
         result = {
+            "auroc": auroc,
+            "aupr": aupr,
             "sap_auroc": sap_auroc,
             "sap_aupr": sap_aupr,
             "nap_auroc": nap_auroc,
