@@ -46,7 +46,8 @@ class RaPP:
         self.model.eval()
         with torch.no_grad():
             x, y = batch
-            diffs = self.get_pathaway_recon_diff(x)
+            recon_x = self.model(x)
+            diffs = self.get_pathaway_recon_diff(x, recon_x)
         return diffs
 
     def training_epoch_end(self, outputs: List[Any]) -> None:
