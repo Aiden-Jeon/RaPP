@@ -39,7 +39,7 @@ class AdversarialAutoEncoder(AutoEncoder):
         recon_loss = self.loss_fn(x_recon, x)
         return recon_loss
 
-    def get_D_loss(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    def get_D_loss(self, x: torch.Tensor) -> torch.Tensor:
         z_fake = self.encoder(x)
         z_true = torch.randn(z_fake.size()).to(self.device)
 
@@ -55,7 +55,7 @@ class AdversarialAutoEncoder(AutoEncoder):
         D_loss = true_loss + fake_loss
         return D_loss
 
-    def get_G_loss_value(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    def get_G_loss_value(self, x: torch.Tensor) -> torch.Tensor:
         batch_size = x.size(0)
         target_ones = torch.ones(batch_size, 1).to(self.device)
         z_fake = self.encoder(x)
@@ -85,14 +85,14 @@ class AdversarialAutoEncoder(AutoEncoder):
         # update discriminator
         #
         disc_opt.zero_grad()
-        D_loss = self.get_D_loss(x, y)
+        D_loss = self.get_D_loss(x)
         D_loss.backward()
         disc_opt.step()
         #
         # update generator
         #
         encoder_opt.zero_grad()
-        G_loss = self.get_G_loss_value(x, y)
+        G_loss = self.get_G_loss_value(x)
         G_loss.backward()
         encoder_opt.step()
 

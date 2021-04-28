@@ -8,6 +8,8 @@ class FullyConnectedLayer(nn.Module):
         layer = [nn.Linear(input_size, output_size), nn.BatchNorm1d(output_size)]
         if act == "leakyrelu":
             layer += [nn.LeakyReLU()]
+        elif act == "sigmoid":
+            layer += [nn.Sigmoid()]
         self.layer = nn.Sequential(*layer)
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
