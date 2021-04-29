@@ -7,9 +7,18 @@ RaPP: Novelty Detection with Reconstruction along Projection Pathway, Ki Hyun Ki
 Table 2 is the result from paper.
 
 And below is the result of our code.
-...
+| model   |    auroc |   sap_auroc |   nap_auroc |
+|:--------|---------:|------------:|------------:|
+| ae      | 0.860023 |    0.907494 |    0.889191 |
+| vae     | 0.884786 |    0.933115 |    0.895276 |
+| aae     | 0.889091 |    0.92464  |    0.897814 |
 
-You can see the each experiment result in `assets/results.csv`
+You can see the each experiment result in `assets/runs.csv`
+
+**Notice**  
+In paper's code, they used best model, lowest validation loss.
+But in this code we just used last trained model.
+Maybe this lead some difference in result.
 
 # Usage
 ## Environment
