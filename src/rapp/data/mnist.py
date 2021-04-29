@@ -1,5 +1,6 @@
 from typing import Optional
 
+import numpy as np
 import torch
 from torch.utils.data import DataLoader, random_split, ConcatDataset
 from torchvision.datasets import MNIST
@@ -20,6 +21,7 @@ class MNISTDataModule(pl.LightningDataModule):
         seed: int = 42,
         batch_size: int = 256,
         unseen_label: int = 0,
+        unimodal: bool = False,
         *args,
         **kwargs,
     ):
@@ -31,6 +33,7 @@ class MNISTDataModule(pl.LightningDataModule):
         self.seed = seed
         self.batch_size = batch_size
         self.unseen_label = unseen_label
+        self.unimodal = unimodal
         self.dataset_train = ...
         self.dataset_val = ...
         self.dataset_test = ...
@@ -57,21 +60,32 @@ class MNISTDataModule(pl.LightningDataModule):
         labels = torch.cat([train_label, test_label])
 
         # split data with seen labels and unseen labels
-        seen_idx = labels != self.unseen_label
-        unseen_idx = labels == self.unseen_label
+        if self.unimodal:
+            # if unimodal unseen_label converts meaning with seen_label
+            seen_idx = labels == self.unseen_label
+            unseen_idx = labels != self.unseen_label
+        else:
+            seen_idx = labels != self.unseen_label
+            unseen_idx = labels == self.unseen_label
+
         seen_data = data[seen_idx]
         unseen_data = data[unseen_idx]
+
+        # split seen data to train, valid, test
+        train_size = int(seen_data.size(0) * 0.7)
+        valid_size = int(seen_data.size(0) * 0.2)
+        test_size = len(seen_data) - train_size - valid_size
+        if self.unimodal:
+            sample_idx = np.random.choice(len(unseen_data), test_size, replace=False)
+            sample_idx.sort()
+            unseen_data = unseen_data[sample_idx]
+
         seen_dataset = CustomDataset(
             seen_data, torch.Tensor([0] * len(seen_data)), **extra
         )
         unseen_dataset = CustomDataset(
             unseen_data, torch.Tensor([1] * len(unseen_data)), **extra
         )
-
-        # split seen data to train, valid, test
-        train_size = int(seen_data.size(0) * 0.7)
-        valid_size = int(seen_data.size(0) * 0.2)
-        test_size = len(seen_data) - train_size - valid_size
 
         self.dataset_train, self.dataset_val, test_data = random_split(
             seen_dataset, [train_size, valid_size, test_size]
