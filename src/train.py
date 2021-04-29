@@ -65,7 +65,7 @@ def main(
             "n_trial": n_trial,
         }
     )
-    gpus = -1 if torch.cuda.is_available() else 0
+    gpus = 1 if torch.cuda.is_available() else 0
     trainer = pl.Trainer(logger=logger, max_epochs=max_epochs, gpus=gpus)
     trainer.fit(auto_encoder, data_module)
     rapp = RaPP(auto_encoder)
