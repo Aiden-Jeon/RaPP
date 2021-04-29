@@ -76,7 +76,7 @@ def main(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="ae")
+    parser.add_argument("--model", type=str, default="ae", choices=["ae", "aae", "vae"])
     parser.add_argument("--dataset", type=str, default="mnist")
     parser.add_argument("--target_label", type=int, default=0)
     parser.add_argument("--data_dir", type=str, default="/")
