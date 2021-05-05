@@ -11,14 +11,21 @@ class RaPP:
         model,
         rapp_start_index: int = 1,
         rapp_end_index: int = -1,
+        loss_reduction: str = "sum",
     ):
         assert hasattr(model, "encoder")
+        assert loss_reduction in ["sum", "mean"]
         super().__init__()
         self.model = model
         self.rapp_start_index = rapp_start_index
         self.rapp_end_index = (
             rapp_end_index if rapp_end_index != -1 else len(model.encoder)
         )
+        if loss_reduction == "mean":
+            self.reduction_fn = torch.mean
+        else:
+            self.reduction_fn = torch.sum
+
         self.mu = None
         self.s = None
         self.v = None
@@ -67,7 +74,7 @@ class RaPP:
         with torch.no_grad():
             x, y = batch
             recon_x = self.model(x)
-            score = ((recon_x - x) ** 2).mean(dim=1)
+            score = self.reduction_fn((recon_x - x) ** 2, dim=1)
             diffs = self.get_pathaway_recon_diff(x, recon_x)
         return {"score": score, "diffs": diffs, "label": y}
 
@@ -84,8 +91,10 @@ class RaPP:
         score = torch.cat(score).numpy()
 
         rapp_score = torch.cat(rapp_score, dim=0)
-        sap_score = (rapp_score ** 2).mean(dim=1).numpy()
-        nap_score = ((torch.mm(rapp_score - self.mu, self.v) / self.s) ** 2).mean(1).numpy()
+        sap_score = self.reduction_fn(rapp_score ** 2, dim=1).numpy()
+        nap_score = self.reduction_fn(
+            (torch.mm(rapp_score - self.mu, self.v) / self.s) ** 2, dim=1
+        ).numpy()
 
         auroc = get_auroc(label, score)
         aupr = get_aupr(label, score)

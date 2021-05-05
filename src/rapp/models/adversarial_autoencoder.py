@@ -15,11 +15,13 @@ class AdversarialAutoEncoder(AutoEncoder):
         hidden_size: int,
         n_layers: int = 3,
         d_layers: int = 3,
+        loss_reduction: str = "sum",
     ):
         super().__init__(
             input_size=input_size,
             hidden_size=hidden_size,
             n_layers=n_layers,
+            loss_reduction=loss_reduction,
         )
         decoder_hidden_sizes = get_hidden_sizes(hidden_size, 1, d_layers)
         disc_layers = []
@@ -31,7 +33,7 @@ class AdversarialAutoEncoder(AutoEncoder):
             )
         ]
         self.discriminator = nn.Sequential(*disc_layers)
-        self.bce_loss = nn.BCELoss()
+        self.bce_loss = nn.BCELoss(reduction=loss_reduction)
         self.automatic_optimization = False
 
     def get_recon_loss(self, x: torch.Tensor) -> torch.Tensor:
@@ -99,6 +101,15 @@ class AdversarialAutoEncoder(AutoEncoder):
         loss = recon_loss + D_loss + G_loss
 
         self.log_dict({"recon_loss": recon_loss, "D_loss": D_loss, "G_loss": G_loss})
+        return loss
+
+    def validation_step(
+        self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int
+    ) -> torch.Tensor:
+        x, _ = batch
+        recon_x = self(x)
+        loss = self.loss_fn(x, recon_x)
+        self.log("valid_loss", loss)
         return loss
 
     def configure_optimizers(self):

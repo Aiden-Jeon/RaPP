@@ -25,6 +25,7 @@ def main(
     tracking_uri: str,
     n_trial: int,
     unimodal: bool,
+    loss_reduction: str,
 ):
     if dataset == "mnist":
         data_module = MNISTDataModule(
@@ -38,11 +39,17 @@ def main(
         raise ValueError(f"Not valid dataset name {dataset}")
     if model == "ae":
         auto_encoder = AutoEncoder(
-            input_size=input_size, hidden_size=hidden_size, n_layers=n_layers
+            input_size=input_size,
+            hidden_size=hidden_size,
+            n_layers=n_layers,
+            loss_reduction=loss_reduction,
         )
     elif model == "vae":
         auto_encoder = VariationalAutoEncoder(
-            input_size=input_size, hidden_size=hidden_size, n_layers=n_layers
+            input_size=input_size,
+            hidden_size=hidden_size,
+            n_layers=n_layers,
+            loss_reduction=loss_reduction,
         )
     elif model == "aae":
         auto_encoder = AdversarialAutoEncoder(
@@ -50,6 +57,7 @@ def main(
             hidden_size=hidden_size,
             n_layers=n_layers,
             d_layers=n_layers,
+            loss_reduction=loss_reduction,
         )
     else:
         raise ValueError(f"Not valid model name {model}")
@@ -63,6 +71,7 @@ def main(
             "n_layers": n_layers,
             "max_epochs": max_epochs,
             "n_trial": n_trial,
+            "loss_reduction": loss_reduction,
         }
     )
     gpus = 1 if torch.cuda.is_available() else 0
@@ -87,6 +96,9 @@ if __name__ == "__main__":
     parser.add_argument("--tracking_uri", type=str, default="file:./mlruns")
     parser.add_argument("--n_trial", type=int, default=0)
     parser.add_argument("--unimodal", action="store_true")
+    parser.add_argument(
+        "--loss_reduction", type=str, default="sum", choices=["sum", "mean"]
+    )
     args = parser.parse_args()
 
     main(
@@ -101,4 +113,5 @@ if __name__ == "__main__":
         tracking_uri=args.tracking_uri,
         n_trial=args.n_trial,
         unimodal=args.unimodal,
+        loss_reduction=args.loss_reduction,
     )

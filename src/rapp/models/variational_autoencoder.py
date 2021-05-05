@@ -10,11 +10,19 @@ from ..utils import get_hidden_sizes
 
 
 class VariationalAutoEncoder(AutoEncoder):
-    def __init__(self, input_size: int, hidden_size: int, n_layers: int, k: int = 10):
+    def __init__(
+        self,
+        input_size: int,
+        hidden_size: int,
+        n_layers: int,
+        k: int = 10,
+        loss_reduction: str = "sum",
+    ):
         super().__init__(
             input_size=input_size,
             hidden_size=hidden_size,
             n_layers=n_layers,
+            loss_reduction=loss_reduction,
         )
         encoder_hidden_sizes = get_hidden_sizes(input_size, hidden_size * 2, n_layers)
         encoder_layers = []
@@ -30,6 +38,7 @@ class VariationalAutoEncoder(AutoEncoder):
         self.kld_loss_fn = lambda mu, logvar: 0.5 * (
             mu ** 2 + logvar.exp() - logvar - 1
         )
+        self.loss_reduction = loss_reduction
 
     def reparameterize_normal(
         self,
@@ -60,7 +69,7 @@ class VariationalAutoEncoder(AutoEncoder):
     def training_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int
     ) -> torch.Tensor:
-        x, y = batch
+        x, _ = batch
         encode_dict = self.encode(x)
         recon_x = self.decode(encode_dict["z"])
         _x = x.unsqueeze(0).expand(self.k, *x.size()).contiguous()
@@ -70,8 +79,11 @@ class VariationalAutoEncoder(AutoEncoder):
         logvar = encode_dict["logvar"]
         kld_loss = self.kld_loss_fn(mu, logvar).mean()
 
-        recon_loss *= x.size(1)
-        kld_loss *= encode_dict["z"].size(1)
+        if self.loss_reduction == "mean":
+            recon_loss /= self.k
+        else:
+            recon_loss *= x.size(1)
+            kld_loss *= encode_dict["z"].size(1)
 
         loss = recon_loss + kld_loss
         self.log_dict({"recon_loss": recon_loss, "kld_loss": kld_loss})
@@ -80,7 +92,7 @@ class VariationalAutoEncoder(AutoEncoder):
     def validation_step(
         self, batch: Tuple[torch.Tensor, torch.Tensor], batch_idx: int
     ) -> torch.Tensor:
-        x, y = batch
+        x, _ = batch
         recon_x = self(x)
         loss = self.loss_fn(x, recon_x)
         self.log("valid_loss", loss)

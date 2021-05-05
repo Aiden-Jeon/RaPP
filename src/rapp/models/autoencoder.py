@@ -9,8 +9,9 @@ from ..utils import get_hidden_sizes
 
 
 class AutoEncoder(pl.LightningModule):
-    def __init__(self, input_size: int, hidden_size: int, n_layers: int):
+    def __init__(self, input_size: int, hidden_size: int, n_layers: int, loss_reduction: str= "sum"):
         super().__init__()
+        assert loss_reduction in ["sum", "mean"]
         encoder_hidden_sizes = get_hidden_sizes(input_size, hidden_size, n_layers)
         encoder_layers = []
         for i, o in zip(encoder_hidden_sizes[:-2], encoder_hidden_sizes[1:-1]):
@@ -31,7 +32,7 @@ class AutoEncoder(pl.LightningModule):
         ]
         self.encoder = nn.Sequential(*encoder_layers)
         self.decoder = nn.Sequential(*decoder_layers)
-        self.loss_fn = nn.MSELoss()
+        self.loss_fn = nn.MSELoss(reduction=loss_reduction)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.decoder(self.encoder(x))
