@@ -34,13 +34,12 @@ class RaPP:
         self, x: torch.Tensor, recon_x: torch.Tensor
     ) -> torch.Tensor:
         diffs = [recon_x - x]
-        for layer_index, layer in enumerate(self.model.encoder[: self.rapp_end_index]):
+        for layer in self.model.encoder[: self.rapp_end_index]:
             x = layer(x)
             recon_x = layer(recon_x)
-            if layer_index >= self.rapp_start_index:
-                diff = recon_x - x
-                diffs.append(diff)
-        diffs = torch.cat(diffs, dim=1)
+            diff = recon_x - x
+            diffs.append(diff)
+        diffs = torch.cat(diffs[self.rapp_start_index :], dim=1)
         return diffs
 
     @torch.no_grad()
