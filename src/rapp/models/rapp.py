@@ -43,18 +43,18 @@ class RaPP:
         diffs = torch.cat(diffs, dim=1)
         return diffs
 
+    @torch.no_grad()
     def fit(self, train_loader: DataLoader) -> None:
+        self.model.eval()
         outputs = []
         for batch in train_loader:
             outputs += [self.training_step(batch)]
         self.training_epoch_end(outputs)
 
     def training_step(self, batch: Tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
-        self.model.eval()
-        with torch.no_grad():
-            x, y = batch
-            recon_x = self.model(x)
-            diffs = self.get_pathaway_recon_diff(x, recon_x)
+        x, y = batch
+        recon_x = self.model(x)
+        diffs = self.get_pathaway_recon_diff(x, recon_x)
         return diffs
 
     def training_epoch_end(self, outputs: List[Any]) -> None:
@@ -62,7 +62,9 @@ class RaPP:
         self.mu = outputs.mean(dim=0, keepdim=True)
         _, self.s, self.v = (outputs - self.mu).svd()
 
+    @torch.no_grad()
     def test(self, test_loader: DataLoader) -> Dict[str, float]:
+        self.model.eval()
         outputs = []
         for batch in test_loader:
             outputs += [self.test_step(batch)]
@@ -70,12 +72,10 @@ class RaPP:
         return result
 
     def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor]) -> Dict[str, float]:
-        self.model.eval()
-        with torch.no_grad():
-            x, y = batch
-            recon_x = self.model(x)
-            score = self.reduction_fn((recon_x - x) ** 2, dim=1)
-            diffs = self.get_pathaway_recon_diff(x, recon_x)
+        x, y = batch
+        recon_x = self.model(x)
+        score = self.reduction_fn((recon_x - x) ** 2, dim=1)
+        diffs = self.get_pathaway_recon_diff(x, recon_x)
         return {"score": score, "diffs": diffs, "label": y}
 
     def test_epoch_end(self, outputs: List[Any]) -> Dict[str, float]:
