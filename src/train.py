@@ -26,6 +26,8 @@ def main(
     n_trial: int,
     unimodal: bool,
     loss_reduction: str,
+    rapp_start_index: int,
+    rapp_end_index: int,
 ):
     if dataset == "mnist":
         data_module = MNISTDataModule(
@@ -72,12 +74,19 @@ def main(
             "max_epochs": max_epochs,
             "n_trial": n_trial,
             "loss_reduction": loss_reduction,
+            "rapp_start_index": rapp_start_index,
+            "rapp_end_index": rapp_end_index,
         }
     )
     gpus = 1 if torch.cuda.is_available() else 0
     trainer = pl.Trainer(logger=logger, max_epochs=max_epochs, gpus=gpus)
     trainer.fit(auto_encoder, data_module)
-    rapp = RaPP(auto_encoder)
+    rapp = RaPP(
+        model=auto_encoder,
+        rapp_start_index=rapp_start_index,
+        rapp_end_index=rapp_start_index,
+        loss_reduction=loss_reduction,
+    )
     rapp.fit(data_module.train_dataloader())
     result = rapp.test(data_module.test_dataloader())
     logger.log_metrics(result)
@@ -96,6 +105,8 @@ if __name__ == "__main__":
     parser.add_argument("--tracking_uri", type=str, default="file:./mlruns")
     parser.add_argument("--n_trial", type=int, default=0)
     parser.add_argument("--unimodal", action="store_true")
+    parser.add_argument("--rapp_start_index", type=int, default=0)
+    parser.add_argument("--rapp_end_index", type=int, default=-1)
     parser.add_argument(
         "--loss_reduction", type=str, default="sum", choices=["sum", "mean"]
     )
@@ -114,4 +125,6 @@ if __name__ == "__main__":
         n_trial=args.n_trial,
         unimodal=args.unimodal,
         loss_reduction=args.loss_reduction,
+        rapp_start_index=args.rapp_start_index,
+        rapp_end_index=args.rapp_end_index,
     )
