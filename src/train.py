@@ -84,7 +84,7 @@ def main(
     rapp = RaPP(
         model=auto_encoder,
         rapp_start_index=rapp_start_index,
-        rapp_end_index=rapp_start_index,
+        rapp_end_index=rapp_end_index,
         loss_reduction=loss_reduction,
     )
     rapp.fit(data_module.train_dataloader())
