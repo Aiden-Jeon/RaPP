@@ -17,7 +17,7 @@ class MNISTDataModule(pl.LightningDataModule):
         self,
         data_dir: str = "",
         num_workers: int = 8,
-        normalize: bool = False,
+        normalize: bool = True,
         seed: int = 42,
         batch_size: int = 256,
         unseen_label: int = 0,
@@ -72,7 +72,7 @@ class MNISTDataModule(pl.LightningDataModule):
         unseen_data = data[unseen_idx]
 
         # split seen data to train, valid, test
-        train_size = int(seen_data.size(0) * 0.7)
+        train_size = int(seen_data.size(0) * 0.6)
         valid_size = int(seen_data.size(0) * 0.2)
         test_size = len(seen_data) - train_size - valid_size
         if self.unimodal:
