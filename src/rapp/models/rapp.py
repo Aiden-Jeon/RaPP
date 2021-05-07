@@ -19,13 +19,12 @@ class RaPP:
         self.model = model
         self.rapp_start_index = rapp_start_index
         self.rapp_end_index = (
-            rapp_end_index if rapp_end_index != -1 else len(model.encoder)
+            len(self.model.encoder) + rapp_end_index + 1
+            if rapp_end_index < 0
+            else rapp_end_index
         )
-        if loss_reduction == "mean":
-            self.reduction_fn = torch.mean
-        else:
-            self.reduction_fn = torch.sum
-
+        assert self.rapp_start_index < self.rapp_end_index
+        self.reduction_fn = torch.mean if loss_reduction == "mean" else torch.sum
         self.mu = None
         self.s = None
         self.v = None
