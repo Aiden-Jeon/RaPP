@@ -77,7 +77,7 @@ class VariationalAutoEncoder(AutoEncoder):
 
         mu = encode_dict["mu"]
         logvar = encode_dict["logvar"]
-        kld_loss = self.kld_loss_fn(mu, logvar).mean()
+        kld_loss = self.kld_loss_fn(mu, logvar)
 
         if self.loss_reduction == "mean":
             recon_loss /= self.k
