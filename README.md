@@ -7,11 +7,11 @@ RaPP: Novelty Detection with Reconstruction along Projection Pathway, Ki Hyun Ki
 Table 2 is the result from paper.
 
 And below is the result of our code.
-| model   |    auroc |   nap_auroc |   sap_auroc |
+| model   |    auroc |   sap_auroc |   nap_auroc |
 |:--------|---------:|------------:|------------:|
-| aae     | 0.862623 |    0.916441 |    0.911775 |
-| ae      | 0.858531 |    0.916463 |    0.908304 |
-| vae     | 0.880025 |    0.873222 |    0.929843 |
+| aae     | 0.862623 |    0.911775 |    **0.916441** |
+| ae      | 0.858531 |    0.908304 |    **0.916463** |
+| vae     | 0.880025 |    **0.929843** |    0.873222 |
 
 You can see the each experiment result in `assets/runs.csv`
 
