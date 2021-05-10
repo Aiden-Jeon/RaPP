@@ -9,9 +9,9 @@ Table 2 is the result from paper.
 And below is the result of our code.
 | model   |    auroc |   sap_auroc |   nap_auroc |
 |:--------|---------:|------------:|------------:|
-| aae     | 0.862623 |    0.911775 |    **0.916441** |
 | ae      | 0.858531 |    0.908304 |    **0.916463** |
 | vae     | 0.880025 |    **0.929843** |    0.873222 |
+| aae     | 0.862623 |    0.911775 |    **0.916441** |
 
 You can see the each experiment result in `assets/runs.csv`
 
